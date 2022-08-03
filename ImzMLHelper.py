@@ -1,5 +1,6 @@
 from pyimzml.ImzMLParser import ImzMLParser
 
+
 class ImzMLHelper:
     """
     The ImzMLHelper class provides some functionalities to help reading a imzML file stored
@@ -39,6 +40,9 @@ class ImzMLHelper:
         parser = ImzMLParser(f, ibd_file=None)
         # print(parser.spectrum_full_metadata)
         # print(parser.get_spectrum_as_string(1))
+        print(parser.filename)
+        print(parser.root)
+        print(parser.sizeDict)
         print(parser.metadata)
         print(parser.polarity)
         print(parser.intGroupId)
@@ -48,6 +52,34 @@ class ImzMLHelper:
         coordinates = parser.coordinates
         f.close()
 
+    def test_ibd(self):
+        print(self.filename_imz)
+        print(self.filename_ibd)
+        f = open(self.filename_imz, "r+b")
+        f_ibd = open(self.filename_ibd, "r+b")
+        parser = ImzMLParser(f, ibd_file=f_ibd)
+        # print(parser.get_spectrum_as_string(1))
+        print("\n")
+        print("\n")
+        print(parser.get_physical_coordinates(3))
+        print("\n")
+        print("\n")
+        print(parser.getspectrum(3))
+        print("\n")
+        print("\n")
+        # print(parser.get_spectrum_as_string(1))
+        print(parser.polarity)
+        print(parser.intGroupId)
+        print(parser.imzmldict)
+        print(parser.iterparse)
+        print(parser.precisionDict)
+        coordinates = parser.coordinates
+        f.close()
+        f_ibd.close()
+
+    def split_imz(self):
+        print()
+
     def get_all_coordinates(self):
         f = open(self.filename_imz, "r+b")
         parser = ImzMLParser(f, ibd_file=None)
@@ -55,11 +87,47 @@ class ImzMLHelper:
         f.close()
         return coordinates
 
-    def get_attributes(self, coord):
-        print()
+    def get_metadata(self):
+        f = open(self.filename_imz, "r+b")
+        parser = ImzMLParser(f, ibd_file=None)
+
+        info = {"imzML filename": self.filename_imz, "ibd filename": self.filename_ibd,
+                "Polarity": parser.polarity, "Int Group Id": parser.intGroupId,
+                "Basic imzML metadata for reading spectra": parser.imzmldict}
+
+        f.close()
+        return info
 
     def get_intensity_info(self):
-        print()
+        global precision_aux
+        f = open(self.filename_imz, "r+b")
+        parser = ImzMLParser(f, ibd_file=None)
+
+        for key, value in parser.precisionDict.items():
+            if parser.intensityPrecision == value:
+                precision_aux = key
+
+        info = {"Intensity Offsets": parser.intensityOffsets, "Intensity Precision": precision_aux,
+                "Intensity Lengths": parser.intensityLengths}
+
+        f.close()
+        return info
+
+    def get_intensity_info_point(self, coordinate: tuple):
+        global precision_aux
+        f = open(self.filename_imz, "r+b")
+        parser = ImzMLParser(f, ibd_file=None)
+        position = parser.coordinates.index(coordinate)
+
+        for key, value in parser.precisionDict.items():
+            if parser.intensityPrecision == value:
+                precision_aux = key
+
+        info = {"Intensity Offsets": parser.intensityOffsets[position], "Intensity Precision": precision_aux,
+                "Intensity Lengths": parser.intensityLengths[position]}
+
+        f.close()
+        return info
 
     def get_mz_info(self):
         global precision_aux
@@ -70,8 +138,8 @@ class ImzMLHelper:
             if parser.mzPrecision == value:
                 precision_aux = key
 
-        info = {"mzOffsets": parser.mzOffsets, "mzGroupId": parser.mzGroupId,
-                "mzPrecision": precision_aux, "mzLengths": parser.mzLengths}
+        info = {"mz Offsets": parser.mzOffsets, "mz Group Id": parser.mzGroupId,
+                "mz Precision": precision_aux, "mz Lengths": parser.mzLengths}
         f.close()
         return info
 
@@ -85,7 +153,18 @@ class ImzMLHelper:
             if parser.mzPrecision == value:
                 precision_aux = key
 
-        info = {"mzOffsets": parser.mzOffsets[position], "mzGroupId": parser.mzGroupId,
-                "mzPrecision": precision_aux, "mzLengths": parser.mzLengths[position]}
+        info = {"mz Offsets": parser.mzOffsets[position], "mz Group Id": parser.mzGroupId,
+                "mz Precision": precision_aux, "mz Lengths": parser.mzLengths[position]}
+        f.close()
+        return info
+
+    def get_point_data(self, coordinate: tuple):
+        f = open(self.filename_imz, "r+b")
+        f_ibd = open(self.filename_ibd, "r+b")
+        parser = ImzMLParser(f, ibd_file=f_ibd)
+
+        position = parser.coordinates.index(coordinate)
+
+        info = parser.getspectrum(position)
         f.close()
         return info
