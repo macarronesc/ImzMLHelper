@@ -198,7 +198,8 @@ class ImzMLHelper:
 
         position = parser.coordinates.index(coordinate)
         intensityOffset = parser.intensityOffsets[position]
-        intensitySize = parser.sizeDict.get(parser.intensityPrecision)
+        intensitySize = (parser.sizeDict.get(parser.intensityPrecision) * parser.intensityLengths[position]) - 1
+        # intensitySize = parser.intensityLengths[position]
 
         """header_request = self.ibm_cos.get_object(Bucket=self.bucket, Key=self.key_ibd,
                                                  Range='bytes={}-{}'.format(0, 16))
@@ -210,13 +211,12 @@ class ImzMLHelper:
 
         header_request = self.ibm_cos.get_object(Bucket=self.bucket, Key=self.key_ibd,
                                                  Range='bytes={}-{}'.format(intensityOffset,
-                                                                            intensityOffset * intensitySize))
-
+                                                                            intensityOffset + intensitySize))
         body = header_request['Body']
         f_ibd = open(self.filename_ibd, "a+b")
         array = []
         for i in body:
-            array = np.append(array, np.frombuffer(i, dtype=parser.mzPrecision))
+            array = np.append(array, np.frombuffer(i, dtype=parser.intensityPrecision))
             f_ibd.write(i)
         f_ibd.close()
 
