@@ -1,4 +1,5 @@
 from pyimzml.ImzMLParser import ImzMLParser
+import numpy as np
 
 
 class ImzMLHelper:
@@ -197,33 +198,26 @@ class ImzMLHelper:
 
         position = parser.coordinates.index(coordinate)
         intensityOffset = parser.intensityOffsets[position]
-        intensitySize = parser.intensityLengths[position]
+        intensitySize = parser.sizeDict.get(parser.intensityPrecision)
 
-        header_request = self.ibm_cos.get_object(Bucket=self.bucket, Key=self.key_ibd,
+        """header_request = self.ibm_cos.get_object(Bucket=self.bucket, Key=self.key_ibd,
                                                  Range='bytes={}-{}'.format(0, 16))
         body = header_request['Body']
         f_ibd = open(self.filename_ibd, "w+b")
         for i in body:
             f_ibd.write(i)
-        f_ibd.close()
+        f_ibd.close()"""
 
         header_request = self.ibm_cos.get_object(Bucket=self.bucket, Key=self.key_ibd,
                                                  Range='bytes={}-{}'.format(intensityOffset,
-                                                                            intensityOffset + intensitySize))
+                                                                            intensityOffset * intensitySize))
+
         body = header_request['Body']
         f_ibd = open(self.filename_ibd, "a+b")
+        array = []
         for i in body:
+            array = np.append(array, np.frombuffer(i, dtype=parser.mzPrecision))
             f_ibd.write(i)
         f_ibd.close()
 
-        print("AAA")
-        f_ibd = open(self.filename_ibd, "r+b")
-        parser = ImzMLParser(f, ibd_file=f_ibd)         # ERROR
-
-        print("BBB")
-        info = parser.getspectrum(position)
-
-        print("CCC")
-        f.close()
-        f_ibd.close()
-        return info
+        return array

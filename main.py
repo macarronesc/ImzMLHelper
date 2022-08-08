@@ -15,7 +15,21 @@ def helper_test(aux, ibm_cos):
     print(helper.get_intensity_info())
     print("\n")
     # print(helper.get_mz_info())
+    print(helper.get_mz_info_point((1, 2, 1)))
+    print("\n")
+    print(helper.get_intensity_info_point((1, 2, 1)))
+    print("\n")
+    print(helper.get_data_point_local((1, 2, 1))[1])
+    print(len(helper.get_data_point_local((1, 2, 1))[1]))
+    print("\n")
+    #print(helper.test())
     print(helper.get_data_point_cloud(tuple((1, 2, 1))))
+    print(len(helper.get_data_point_cloud((1, 2, 1))))
+    print("\n")
+    print(helper.get_data_point_local((1, 2, 1))[1][12])
+    print(helper.get_data_point_cloud(tuple((1, 2, 1)))[12])
+    print(helper.get_data_point_local((1, 2, 1))[1][13])
+    print(helper.get_data_point_cloud(tuple((1, 2, 1)))[13])
 
 
 if __name__ == '__main__':
